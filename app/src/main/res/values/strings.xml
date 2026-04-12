@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CursorBuddy</string>
+    <string name="accessibility_service_description">CursorBuddy reads screen content to understand the app you are using and guide you through tasks. Your screen data never leaves your device.</string>
+</resources>

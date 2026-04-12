@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_cursor"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/circle_accent"
+            android:padding="14dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CursorBuddy"
+            android:textSize="28sp"
+            android:textColor="@color/on_surface"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AI-powered screen guide"
+            android:textSize="14sp"
+            android:textColor="@color/on_surface_secondary"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- AI API Key -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AI Brain (Claude API)"
+                android:textSize="16sp"
+                android:textColor="@color/on_surface"
+                android:textStyle="bold"
+                android:drawableStart="@drawable/ic_brain"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/primary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter your Anthropic API key for AI screen understanding."
+                android:textSize="12sp"
+                android:textColor="@color/on_surface_secondary"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <EditText
+                    android:id="@+id/apiKeyInput"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:hint="sk-ant-..."
+                    android:textSize="13sp"
+                    android:textColor="@color/on_surface"
+                    android:textColorHint="@color/on_surface_secondary"
+                    android:inputType="textPassword"
+                    android:background="@drawable/card_background"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:singleLine="true" />
+
+                <Button
+                    android:id="@+id/saveApiKeyButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:text="Save"
+                    android:backgroundTint="@color/primary"
+                    android:textColor="#FFFFFF"
+                    android:textAllCaps="false"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Overlay Permission -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Display Over Apps"
+                    android:textSize="15sp"
+                    android:textColor="@color/on_surface"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/overlayStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/on_surface_secondary" />
+            </LinearLayout>
+            <Button
+                android:id="@+id/overlayButton"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="Grant Overlay Permission"
+                android:backgroundTint="@color/primary"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- Accessibility Permission -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Accessibility Service"
+                    android:textSize="15sp"
+                    android:textColor="@color/on_surface"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/accessibilityStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/on_surface_secondary" />
+            </LinearLayout>
+            <Button
+                android:id="@+id/accessibilityButton"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="Enable Accessibility Service"
+                android:backgroundTint="@color/primary"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- Screen Capture Permission -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Screen Capture (AI Vision)"
+                    android:textSize="15sp"
+                    android:textColor="@color/on_surface"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/screenCaptureStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/on_surface_secondary" />
+            </LinearLayout>
+            <Button
+                android:id="@+id/screenCaptureButton"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="Grant Screen Capture"
+                android:backgroundTint="#78909C"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Start CursorBuddy"
+            android:backgroundTint="@color/primary_dark"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            android:layout_marginTop="12dp"
+            android:enabled="false"
+            android:alpha="0.5" />
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Grant the permissions above to get started."
+            android:textSize="13sp"
+            android:textColor="@color/on_surface_secondary"
+            android:gravity="center"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="24dp" />
+
+    </LinearLayout>
+</ScrollView>
