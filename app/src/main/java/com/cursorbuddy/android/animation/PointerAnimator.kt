@@ -70,7 +70,7 @@ class PointerAnimator {
     }
 
     private fun startPulse() {
-        pulseAnimator = ValueAnimator.ofFloat(1.0f, 1.3f, 1.0f).apply {
+        pulseAnimator = ValueAnimator.ofFloat(1.0f, 1.14f, 1.0f).apply {
             duration = 600
             interpolator = OvershootInterpolator(1.5f)
             repeatCount = ValueAnimator.INFINITE

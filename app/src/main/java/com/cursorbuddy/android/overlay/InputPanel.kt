@@ -11,6 +11,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import com.cursorbuddy.android.R
 
 class InputPanel(context: Context) : FrameLayout(context) {
 
@@ -29,14 +30,17 @@ class InputPanel(context: Context) : FrameLayout(context) {
     private val isDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
     // Glassmorphism palette — low-alpha surfaces pair with the window's
     // FLAG_BLUR_BEHIND (API 31+) for real frosted-glass.
-    private val glassTop = if (isDark) 0x66202838.toInt() else 0x88FFFFFF.toInt()
-    private val glassBottom = if (isDark) 0x441A2030.toInt() else 0x55F4F8FF.toInt()
+    private val glassTop = if (isDark) 0xEE243243.toInt() else 0xF7FFFFFF.toInt()
+    private val glassBottom = if (isDark) 0xD91A2432.toInt() else 0xEAF4F8FF.toInt()
     private val textColor = if (isDark) 0xFFF2F4F8.toInt() else 0xFF17202A.toInt()
-    private val secondaryText = if (isDark) 0xCCB8C2CC.toInt() else 0xCC4A5560.toInt()
-    private val inputBg = if (isDark) 0x55101520.toInt() else 0x66FFFFFF.toInt()
-    private val inputStroke = if (isDark) 0x44FFFFFF else 0x33FFFFFF
-    private val chipBg = if (isDark) 0x661A3A4A.toInt() else 0x88E3F2FD.toInt()
-    private val strokeColor = if (isDark) 0x55FFFFFF else 0x66FFFFFF
+    private val secondaryText = if (isDark) 0xD7C9D3DD.toInt() else 0xD74A5560.toInt()
+    private val inputBg = if (isDark) 0xCC101A26.toInt() else 0xF2FFFFFF.toInt()
+    private val inputStroke = if (isDark) 0x66FFFFFF else 0x55D8E6F2.toInt()
+    private val chipTop = if (isDark) 0xD9334B5D.toInt() else 0xF5FFFFFF.toInt()
+    private val chipBottom = if (isDark) 0xBF243445.toInt() else 0xDDE7F5FF.toInt()
+    private val buttonGlassTop = if (isDark) 0xDD263445.toInt() else 0xF2FFFFFF.toInt()
+    private val buttonGlassBottom = if (isDark) 0xC01B2734.toInt() else 0xD8EEF7FF.toInt()
+    private val strokeColor = if (isDark) 0x66FFFFFF else 0x88E1ECF5.toInt()
     private val accentColor = 0xFF4FC3F7.toInt()
 
     init {
@@ -51,6 +55,7 @@ class InputPanel(context: Context) : FrameLayout(context) {
                 setStroke(dp(1), strokeColor)
             }
             elevation = dp(12).toFloat()
+            alpha = 0.985f
         }
 
         // Drag handle
@@ -65,6 +70,38 @@ class InputPanel(context: Context) : FrameLayout(context) {
             gravity = Gravity.CENTER_HORIZONTAL
             bottomMargin = dp(8)
         })
+
+        val titleRow = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, 0, 0, dp(10))
+        }
+
+        val brandIcon = ImageView(context).apply {
+            setImageResource(R.drawable.cursorbuddy_app_icon)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(buttonGlassTop, buttonGlassBottom)
+            ).apply {
+                shape = GradientDrawable.OVAL
+                setStroke(dp(1), strokeColor)
+            }
+            clipToOutline = true
+            setPadding(dp(2), dp(2), dp(2), dp(2))
+        }
+        titleRow.addView(brandIcon, LinearLayout.LayoutParams(dp(28), dp(28)).apply {
+            marginEnd = dp(10)
+        })
+
+        val titleText = TextView(context).apply {
+            text = "CursorBuddy"
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            setTextColor(textColor)
+            typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+        }
+        titleRow.addView(titleText)
+        container.addView(titleRow)
 
         // Greeting
         greetingText = TextView(context).apply {
@@ -86,9 +123,11 @@ class InputPanel(context: Context) : FrameLayout(context) {
         micButton = ImageView(context).apply {
             setImageResource(android.R.drawable.ic_btn_speak_now)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
-            background = GradientDrawable().apply {
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(buttonGlassTop, buttonGlassBottom)
+            ).apply {
                 shape = GradientDrawable.OVAL
-                setColor(if (isDark) 0x66101520.toInt() else 0x88FFFFFF.toInt())
                 setStroke(dp(1), strokeColor)
             }
             val btnSize = dp(42)
@@ -105,8 +144,10 @@ class InputPanel(context: Context) : FrameLayout(context) {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setTextColor(textColor)
             setHintTextColor(secondaryText)
-            background = GradientDrawable().apply {
-                setColor(inputBg)
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(inputBg, if (isDark) 0xB8141D29.toInt() else 0xE8F6FBFF.toInt())
+            ).apply {
                 cornerRadius = dp(22).toFloat()
                 setStroke(dp(1), inputStroke)
             }
@@ -195,11 +236,14 @@ class InputPanel(context: Context) : FrameLayout(context) {
                 this.text = text
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                 setTextColor(accentColor)
-                background = GradientDrawable().apply {
-                    setColor(chipBg)
+                background = GradientDrawable(
+                    GradientDrawable.Orientation.TL_BR,
+                    intArrayOf(chipTop, chipBottom)
+                ).apply {
                     cornerRadius = dp(16).toFloat()
                     setStroke(dp(1), strokeColor)
                 }
+                elevation = dp(4).toFloat()
                 setPadding(dp(12), dp(6), dp(12), dp(6))
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,

@@ -8,8 +8,10 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.cursorbuddy.android.R
 
 class CaptionBubble(context: Context) : FrameLayout(context) {
 
@@ -19,10 +21,12 @@ class CaptionBubble(context: Context) : FrameLayout(context) {
     private val isDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
     init {
-        val glassTop = if (isDark) 0x66202838.toInt() else 0x88FFFFFF.toInt()
-        val glassBottom = if (isDark) 0x441A2030.toInt() else 0x55F4F8FF.toInt()
+        val glassTop = if (isDark) 0xF0243243.toInt() else 0xFAFFFFFF.toInt()
+        val glassBottom = if (isDark) 0xDB1A2432.toInt() else 0xEDF5FAFF.toInt()
         val textColor = if (isDark) 0xFFF2F4F8.toInt() else 0xFF17202A.toInt()
-        val strokeColor = if (isDark) 0x55FFFFFF else 0x66FFFFFF
+        val strokeColor = if (isDark) 0x66FFFFFF else 0x88E1ECF5.toInt()
+        val indicatorTop = if (isDark) 0xD9334B5D.toInt() else 0xF5FFFFFF.toInt()
+        val indicatorBottom = if (isDark) 0xBF243445.toInt() else 0xDDE7F5FF.toInt()
         val accentColor = 0xFF4FC3F7.toInt()
 
         val bubbleContainer = LinearLayout(context).apply {
@@ -36,21 +40,58 @@ class CaptionBubble(context: Context) : FrameLayout(context) {
                 setStroke(dp(1), strokeColor)
             }
             elevation = dp(10).toFloat()
+            alpha = 0.99f
         }
+
+        val headerRow = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val brandIcon = ImageView(context).apply {
+            setImageResource(R.drawable.cursorbuddy_app_icon)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(indicatorTop, indicatorBottom)
+            ).apply {
+                shape = GradientDrawable.OVAL
+                setStroke(dp(1), strokeColor)
+            }
+            clipToOutline = true
+            setPadding(dp(2), dp(2), dp(2), dp(2))
+        }
+        headerRow.addView(brandIcon, LinearLayout.LayoutParams(dp(24), dp(24)).apply {
+            marginEnd = dp(8)
+        })
 
         stepIndicator = TextView(context).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
             setTextColor(accentColor)
             typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
-            setPadding(0, 0, 0, dp(4))
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(indicatorTop, indicatorBottom)
+            ).apply {
+                cornerRadius = dp(12).toFloat()
+                setStroke(dp(1), strokeColor)
+            }
+            setPadding(dp(10), dp(5), dp(10), dp(5))
         }
-        bubbleContainer.addView(stepIndicator)
+        headerRow.addView(stepIndicator)
+        bubbleContainer.addView(headerRow, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            bottomMargin = dp(8)
+        })
 
         captionText = TextView(context).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
             setTextColor(textColor)
             typeface = Typeface.create("sans-serif", Typeface.NORMAL)
             maxWidth = dp(280)
+            setLineSpacing(0f, 1.08f)
         }
         bubbleContainer.addView(captionText)
 

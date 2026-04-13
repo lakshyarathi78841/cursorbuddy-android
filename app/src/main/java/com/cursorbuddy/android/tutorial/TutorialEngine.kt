@@ -27,6 +27,8 @@ class TutorialEngine(private val context: Context? = null) : ScreenAnalyzer.Scre
     private var currentStepIndex: Int = 0
     private var screenChangeCount: Int = 0
     private var lastStepAdvanceTime: Long = 0
+    private var pendingUserProgress: Boolean = false
+    private var pendingAdvanceJob: Job? = null
     
     // AI Planner
     private var claudePlanner: ClaudeAIPlanner? = null
@@ -212,6 +214,8 @@ class TutorialEngine(private val context: Context? = null) : ScreenAnalyzer.Scre
         currentTutorial = tutorial
         currentStepIndex = 0
         screenChangeCount = 0
+        pendingUserProgress = false
+        pendingAdvanceJob?.cancel()
         lastStepAdvanceTime = System.currentTimeMillis()
         setState(BuddyState.GUIDING)
         showCurrentStep()
@@ -274,6 +278,8 @@ class TutorialEngine(private val context: Context? = null) : ScreenAnalyzer.Scre
         currentTutorial = null
         currentStepIndex = 0
         screenChangeCount = 0
+        pendingUserProgress = false
+        pendingAdvanceJob?.cancel()
         setState(BuddyState.IDLE)
     }
     
@@ -286,8 +292,9 @@ class TutorialEngine(private val context: Context? = null) : ScreenAnalyzer.Scre
     
     private fun showCurrentStep() {
         val tutorial = currentTutorial ?: return
-        val step = tutorial.steps.getOrNull(currentStepIndex) ?: return
-        Log.d(TAG, "Showing step ${step.stepNumber}/${step.totalSteps}: '${step.caption}'")
+        val rawStep = tutorial.steps.getOrNull(currentStepIndex) ?: return
+        val step = resolveStepForCurrentScreen(rawStep)
+        Log.d(TAG, "Showing step ${step.stepNumber}/${step.totalSteps}: '${step.caption}' target='${step.targetDescription}'")
         callback?.onStepChanged(step)
         
         // Auto-advance after showing pointer + TTS
@@ -301,29 +308,92 @@ class TutorialEngine(private val context: Context? = null) : ScreenAnalyzer.Scre
         }
     }
     
+    private fun resolveStepForCurrentScreen(step: TutorialStep): TutorialStep {
+        val target = step.targetDescription.trim()
+        if (target.isBlank()) return step
+
+        val uiTree = ScreenAnalyzer.getCurrentUiTree() ?: return step
+        val allNodes = uiTree.flatten()
+        val exact = allNodes.firstOrNull {
+            it.text?.equals(target, ignoreCase = true) == true ||
+                it.contentDescription?.equals(target, ignoreCase = true) == true ||
+                it.viewId?.equals(target, ignoreCase = true) == true ||
+                it.label.equals(target, ignoreCase = true)
+        }
+        if (exact != null) {
+            return step.copy(targetBounds = android.graphics.RectF(exact.bounds), targetDescription = exact.label)
+        }
+
+        val contains = allNodes.firstOrNull {
+            it.text?.contains(target, ignoreCase = true) == true ||
+                it.contentDescription?.contains(target, ignoreCase = true) == true ||
+                it.viewId?.contains(target, ignoreCase = true) == true ||
+                it.label.contains(target, ignoreCase = true)
+        }
+        if (contains != null) {
+            return step.copy(targetBounds = android.graphics.RectF(contains.bounds), targetDescription = contains.label)
+        }
+
+        val keywords = target
+            .lowercase()
+            .replace(Regex("[^a-z0-9 ]"), " ")
+            .split(Regex("\\s+"))
+            .filter { it.length > 2 }
+        val keywordMatch = allNodes.firstOrNull { node ->
+            keywords.any { keyword ->
+                node.text?.contains(keyword, ignoreCase = true) == true ||
+                    node.contentDescription?.contains(keyword, ignoreCase = true) == true ||
+                    node.viewId?.contains(keyword, ignoreCase = true) == true ||
+                    node.label.contains(keyword, ignoreCase = true)
+            }
+        }
+
+        return if (keywordMatch != null) {
+            step.copy(targetBounds = android.graphics.RectF(keywordMatch.bounds), targetDescription = keywordMatch.label)
+        } else {
+            step
+        }
+    }
+
     private fun setState(newState: BuddyState) {
         state = newState
         callback?.onStateChanged(newState)
     }
     
     override fun onScreenChanged(packageName: String, uiTree: UiNode?) {
-        if (state == BuddyState.GUIDING) {
-            screenChangeCount++
-            if (screenChangeCount >= 3) {
-                screenChangeCount = 0
+        if (state != BuddyState.GUIDING) return
+
+        if (pendingUserProgress) {
+            Log.d(TAG, "User interaction caused screen change — advancing immediately")
+            pendingUserProgress = false
+            pendingAdvanceJob?.cancel()
+            screenChangeCount = 0
+            nextStep()
+            return
+        }
+
+        screenChangeCount++
+    }
+
+    override fun onUserInteraction(eventType: Int) {
+        if (state != BuddyState.GUIDING) return
+
+        Log.d(TAG, "User interaction during tutorial: eventType=$eventType, step=${currentStepIndex + 1}")
+        pendingUserProgress = true
+        screenChangeCount = 0
+        pendingAdvanceJob?.cancel()
+        pendingAdvanceJob = scope.launch {
+            delay(900)
+            if (state == BuddyState.GUIDING && pendingUserProgress) {
+                Log.d(TAG, "Interaction had no visible screen change — advancing anyway")
+                pendingUserProgress = false
                 nextStep()
             }
         }
     }
     
-    override fun onTargetClicked() {
-        if (state == BuddyState.GUIDING) {
-            screenChangeCount = 0
-            nextStep()
-        }
-    }
-    
     fun destroy() {
+        pendingAdvanceJob?.cancel()
         scope.cancel()
     }
 }

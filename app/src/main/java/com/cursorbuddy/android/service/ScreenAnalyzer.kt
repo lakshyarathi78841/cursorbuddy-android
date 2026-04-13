@@ -10,7 +10,7 @@ object ScreenAnalyzer {
     
     interface ScreenChangeListener {
         fun onScreenChanged(packageName: String, uiTree: UiNode?)
-        fun onTargetClicked()
+        fun onUserInteraction(eventType: Int)
     }
     
     var listener: ScreenChangeListener? = null
@@ -28,8 +28,8 @@ object ScreenAnalyzer {
         listener?.onScreenChanged(packageName, uiTree)
     }
     
-    fun onViewClicked(event: AccessibilityEvent) {
-        listener?.onTargetClicked()
+    fun onUserInteraction(event: AccessibilityEvent) {
+        listener?.onUserInteraction(event.eventType)
     }
     
     fun getCurrentUiTree(): UiNode? {

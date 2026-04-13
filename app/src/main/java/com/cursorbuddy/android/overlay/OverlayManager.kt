@@ -185,7 +185,9 @@ class OverlayManager(private val context: Context) :
 
     private fun showPointer() {
         if (pointerView != null) return
-        pointerView = PointerView(context)
+        pointerView = PointerView(context).apply {
+            animateLensBaseScale(from = 0.72f, to = 0.82f)
+        }
         val params = WindowManager.LayoutParams(
             dp(80), dp(80),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
@@ -367,7 +369,7 @@ class OverlayManager(private val context: Context) :
     override fun onPointerMoved(x: Float, y: Float, progress: Float) { movePointerTo(x, y) }
     override fun onPointerArrived(targetBounds: RectF) { showTargetHighlight(targetBounds) }
     override fun onPulseUpdate(scale: Float) {
-        pointerView?.pointerScale = scale
+        pointerView?.pulseScale = scale
         pointerView?.invalidate()
     }
 
@@ -377,8 +379,15 @@ class OverlayManager(private val context: Context) :
         handler.post {
             when (state) {
                 BuddyState.ANALYZING -> showCaptionBubble("Analyzing screen...", 0, 0, null)
-                BuddyState.GUIDING -> { hideBubble(); showPointer(); showTutorialControls() }
-                BuddyState.PAUSED -> { pointerAnimator.cancelAll(); tutorialControls?.setPaused(true) }
+                BuddyState.GUIDING -> {
+                    hideBubble()
+                    hideTutorialControls()
+                    showPointer()
+                }
+                BuddyState.PAUSED -> {
+                    pointerAnimator.cancelAll()
+                    tutorialControls?.setPaused(true)
+                }
                 BuddyState.COMPLETE -> {
                     handler.postDelayed({
                         hidePointer(); hideCaptionBubble(); hideTargetHighlight(); hideTutorialControls()
@@ -453,19 +462,14 @@ class OverlayManager(private val context: Context) :
     private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
 
     /**
-     * Enable cross-window backdrop blur on the given LayoutParams. On Android 12+
-     * this gives real glassmorphism — the window blurs whatever it's floating
-     * above. On older OS versions it's a no-op (the glass look falls back to
-     * translucent tinting in the views themselves).
+     * Backdrop blur is intentionally disabled.
+     *
+     * Jason called it: blurring the whole screen behind the overlays looks wrong.
+     * We keep the frosting in the panel styling itself instead of using
+     * FLAG_BLUR_BEHIND.
      */
+    @Suppress("UNUSED_PARAMETER")
     private fun enableBackdropBlur(params: WindowManager.LayoutParams, radiusPx: Int) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            try {
-                params.flags = params.flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND
-                params.blurBehindRadius = radiusPx
-            } catch (_: Throwable) {
-                // Unsupported on this device — fall back to in-view translucency.
-            }
-        }
+        // Deliberately a no-op.
     }
 }

@@ -1,5 +1,6 @@
 package com.cursorbuddy.android.overlay
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.view.View
@@ -11,11 +12,28 @@ import android.view.View
  */
 class PointerView(context: Context) : View(context) {
 
-    var pointerScale: Float = 1.0f
+    var lensBaseScale: Float = 0.82f
         set(value) {
             field = value
             invalidate()
         }
+
+    var pulseScale: Float = 1.0f
+        set(value) {
+            field = value
+            invalidate()
+        }
+
+    fun animateLensBaseScale(from: Float, to: Float, duration: Long = 180L) {
+        lensBaseScale = from
+        ValueAnimator.ofFloat(from, to).apply {
+            this.duration = duration
+            addUpdateListener { animator ->
+                lensBaseScale = animator.animatedValue as Float
+            }
+            start()
+        }
+    }
 
     // Lens body — very light tint so the underlying pixels read through
     private val lensBodyPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -50,7 +68,7 @@ class PointerView(context: Context) : View(context) {
 
         val cx = width / 2f
         val cy = height / 2f
-        val radius = (Math.min(width, height) / 2f - 6f) * pointerScale
+        val radius = (Math.min(width, height) / 2f - 6f) * lensBaseScale * pulseScale
         if (radius <= 0f) return
 
         // 1) Drop shadow

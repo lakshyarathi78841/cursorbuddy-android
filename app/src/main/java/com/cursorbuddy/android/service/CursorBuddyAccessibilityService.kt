@@ -32,7 +32,10 @@ class CursorBuddyAccessibilityService : AccessibilityService() {
         serviceInfo = serviceInfo?.apply {
             eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
                          AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
-                         AccessibilityEvent.TYPE_VIEW_CLICKED
+                         AccessibilityEvent.TYPE_VIEW_CLICKED or
+                         AccessibilityEvent.TYPE_VIEW_SCROLLED or
+                         AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED or
+                         AccessibilityEvent.TYPE_VIEW_LONG_CLICKED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
             flags = AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS or
                     AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS or
@@ -58,8 +61,11 @@ class CursorBuddyAccessibilityService : AccessibilityService() {
                 if (packageName == "com.cursorbuddy.android") return
                 ScreenAnalyzer.onScreenChanged(packageName)
             }
-            AccessibilityEvent.TYPE_VIEW_CLICKED -> {
-                ScreenAnalyzer.onViewClicked(event)
+            AccessibilityEvent.TYPE_VIEW_CLICKED,
+            AccessibilityEvent.TYPE_VIEW_SCROLLED,
+            AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED,
+            AccessibilityEvent.TYPE_VIEW_LONG_CLICKED -> {
+                ScreenAnalyzer.onUserInteraction(event)
             }
         }
     }
