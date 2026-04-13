@@ -26,21 +26,24 @@ class TutorialControls(context: Context) : LinearLayout(context) {
     private val pauseBtn: ImageView
 
     private val isDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-    private val surfaceColor = if (isDark) 0xF01E1E1E.toInt() else 0xF0FFFFFF.toInt()
-    private val iconTint = if (isDark) 0xFFE0E0E0.toInt() else 0xFF333333.toInt()
-    private val strokeColor = if (isDark) 0x33FFFFFF else 0x22000000
+    private val glassTop = if (isDark) 0x66202838.toInt() else 0x88FFFFFF.toInt()
+    private val glassBottom = if (isDark) 0x441A2030.toInt() else 0x55F4F8FF.toInt()
+    private val iconTint = if (isDark) 0xFFF2F4F8.toInt() else 0xFF17202A.toInt()
+    private val strokeColor = if (isDark) 0x55FFFFFF else 0x66FFFFFF
 
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER
-        setPadding(dp(8), dp(8), dp(8), dp(8))
-        
-        background = GradientDrawable().apply {
-            setColor(surfaceColor)
+        setPadding(dp(10), dp(10), dp(10), dp(10))
+
+        background = GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            intArrayOf(glassTop, glassBottom)
+        ).apply {
             cornerRadius = dp(28).toFloat()
             setStroke(dp(1), strokeColor)
         }
-        elevation = dp(6).toFloat()
+        elevation = dp(10).toFloat()
 
         addControlButton(android.R.drawable.ic_media_previous) { controlListener?.onPrevious() }
         

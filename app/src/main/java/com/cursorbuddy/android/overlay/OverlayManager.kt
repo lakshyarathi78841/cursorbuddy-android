@@ -94,11 +94,13 @@ class OverlayManager(private val context: Context) :
 
         val screenW = context.resources.displayMetrics.widthPixels
         val screenH = context.resources.displayMetrics.heightPixels
-        lastBubbleX = screenW - dp(80)
-        lastBubbleY = screenH - dp(200)
+        val bubbleSize = dp(84)
+        // Half-pop from the right edge: only ~58% of the lens is on-screen.
+        lastBubbleX = screenW - (bubbleSize * 58 / 100)
+        lastBubbleY = screenH - dp(220)
 
         bubbleParams = WindowManager.LayoutParams(
-            dp(64), dp(64),
+            bubbleSize, bubbleSize,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
@@ -106,6 +108,7 @@ class OverlayManager(private val context: Context) :
             gravity = Gravity.TOP or Gravity.START
             x = lastBubbleX; y = lastBubbleY
         }
+        enableBackdropBlur(bubbleParams!!, dp(18))
         windowManager.addView(bubble, bubbleParams)
     }
 
@@ -156,6 +159,7 @@ class OverlayManager(private val context: Context) :
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
         }
 
+        enableBackdropBlur(params, dp(28))
         windowManager.addView(inputPanel, params)
         inputPanel?.alpha = 0f; inputPanel?.scaleX = 0.9f; inputPanel?.scaleY = 0.9f
         inputPanel?.animate()?.alpha(1f)?.scaleX(1f)?.scaleY(1f)?.setDuration(150)?.start()
@@ -183,7 +187,7 @@ class OverlayManager(private val context: Context) :
         if (pointerView != null) return
         pointerView = PointerView(context)
         val params = WindowManager.LayoutParams(
-            dp(60), dp(60),
+            dp(80), dp(80),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
@@ -194,6 +198,7 @@ class OverlayManager(private val context: Context) :
             x = context.resources.displayMetrics.widthPixels / 2
             y = context.resources.displayMetrics.heightPixels / 2
         }
+        enableBackdropBlur(params, dp(22))
         windowManager.addView(pointerView, params)
     }
 
@@ -206,8 +211,8 @@ class OverlayManager(private val context: Context) :
     private fun movePointerTo(x: Float, y: Float) {
         pointerView?.let { view ->
             val params = view.layoutParams as? WindowManager.LayoutParams ?: return
-            params.x = (x - dp(30)).toInt()
-            params.y = (y - dp(30)).toInt()
+            params.x = (x - dp(40)).toInt()
+            params.y = (y - dp(40)).toInt()
             try { windowManager.updateViewLayout(view, params) } catch (_: Exception) {}
         }
     }
@@ -238,6 +243,7 @@ class OverlayManager(private val context: Context) :
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             y = captionY
         }
+        enableBackdropBlur(params, dp(24))
         windowManager.addView(captionBubble, params)
         captionBubble?.alpha = 0f
         captionBubble?.animate()?.alpha(1f)?.setDuration(200)?.start()
@@ -291,6 +297,7 @@ class OverlayManager(private val context: Context) :
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
             y = dp(32)
         }
+        enableBackdropBlur(params, dp(24))
         windowManager.addView(tutorialControls, params)
     }
 
@@ -444,4 +451,21 @@ class OverlayManager(private val context: Context) :
     override fun onSpeakingDone() {}
 
     private fun dp(value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
+
+    /**
+     * Enable cross-window backdrop blur on the given LayoutParams. On Android 12+
+     * this gives real glassmorphism — the window blurs whatever it's floating
+     * above. On older OS versions it's a no-op (the glass look falls back to
+     * translucent tinting in the views themselves).
+     */
+    private fun enableBackdropBlur(params: WindowManager.LayoutParams, radiusPx: Int) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            try {
+                params.flags = params.flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND
+                params.blurBehindRadius = radiusPx
+            } catch (_: Throwable) {
+                // Unsupported on this device — fall back to in-view translucency.
+            }
+        }
+    }
 }
